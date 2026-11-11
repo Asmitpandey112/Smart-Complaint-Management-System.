@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Complaint Management System - Prototype</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(150, 150, 150, 0.3);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(150, 150, 150, 0.5);
+    }
+  </style>
+</head>
+
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased font-sans min-h-screen">
+
+  <!-- TOP HEADER & ROLE SWITCHER -->
+  <header class="border-b border-[var(--border)] bg-[var(--card)] sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div
+          class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-md">
+          ⚡
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight text-[var(--foreground)]">SmartResolve AI</h1>
+          <p class="text-xs text-[var(--muted-foreground)]">Smart Complaint Management System</p>
+        </div>
+      </div>
+
+      <!-- View Switcher -->
+      <div class="flex items-center bg-[var(--background)] p-1 rounded-xl border border-[var(--border)] shadow-inner">
+        <button id="btn-citizen-view" onclick="switchView('citizen')"
+          class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 bg-blue-600 text-white shadow-sm">
+          👤 Citizen Portal
+        </button>
+        <button id="btn-admin-view" onclick="switchView('admin')"
+          class="px-4 py-1.5 rounded-lg text-sm font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all duration-200">
+          🛡️ Admin & Staff Portal
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- VIEW 1: CITIZEN PORTAL -->
+    <div id="citizen-portal" class="space-y-6">
+
+      <!-- Welcome Banner -->
+      <div
+        class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl p-6 shadow-lg relative overflow-hidden">
+        <div class="relative z-10 max-w-2xl">
+          <span
+            class="bg-blue-500/30 text-blue-100 text-xs px-3 py-1 rounded-full border border-blue-400/30 font-semibold uppercase tracking-wider">AI-Powered
+            Public Services</span>
+          <h2 class="text-2xl font-bold mt-2">Have an issue in your area?</h2>
+          <p class="text-blue-100 text-sm mt-1">Our AI engine automatically categorizes, prioritizes, and routes your
+            complaint to the right municipal department for swift resolution.</p>
+          <div class="mt-4 flex space-x-3">
+            <button onclick="openNewModal()"
+              class="bg-white text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-xl text-sm font-semibold shadow transition-all">
+              + File New Complaint
+            </button>
+            <a href="#my-complaints"
+              class="bg-blue-500/30 hover:bg-blue-500/40 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all border border-white/20">
+              Track Status
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Metrics for Citizen -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div
+          class="bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs text-[var(--muted-foreground)] uppercase font-semibold">Total Filed</p>
+            <p class="text-2xl font-bold text-[var(--foreground)] mt-0.5" id="citizen-total-count">4</p>
+          </div>
+          <div
+            class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center font-bold">
+            📋</div>
+        </div>
+        <div
+          class="bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs text-[var(--muted-foreground)] uppercase font-semibold">In Progress</p>
+            <p class="text-2xl font-bold text-amber-500 mt-0.5" id="citizen-pending-count">2</p>
+          </div>
+          <div
+            class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 flex items-center justify-center font-bold">
+            ⏳</div>
+        </div>
+        <div
+          class="bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs text-[var(--muted-foreground)] uppercase font-semibold">Resolved</p>
+            <p class="text-2xl font-bold text-emerald-500 mt-0.5" id="citizen-resolved-count">2</p>
+          </div>
+          <div
+            class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center font-bold">
+            ✅</div>
+        </div>
+      </div>
+
+      <!-- My Complaints List & Filter -->
+      <div id="my-complaints"
+        class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm space-y-4">
+        <div
+          class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--border)]">
+          <h3 class="text-lg font-bold text-[var(--foreground)]">My Registered Complaints</h3>
+          <div class="flex items-center space-x-2">
+            <select id="citizen-filter-status" onchange="renderCitizenComplaints()"
+              class="bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-lg text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="ALL">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="citizen-complaints-list" class="space-y-4">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 2: ADMIN & STAFF DASHBOARD -->
+    <div id="admin-portal" class="space-y-6 hidden">
+
+      <!-- Admin Top Metrics Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase text-[var(--muted-foreground)]">Total Complaints</span>
+            <span
+              class="text-xs font-bold text-blue-500 bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 rounded">Real-time</span>
+          </div>
+          <p class="text-3xl font-extrabold text-[var(--foreground)] mt-2" id="admin-total-kpi">8</p>
+          <p class="text-xs text-emerald-500 mt-1">↑ 12% from last week</p>
+        </div>
+
+        <div class="bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase text-[var(--muted-foreground)]">SLA Breaches / Critical</span>
+            <span class="text-xs font-bold text-rose-500 bg-rose-100 dark:bg-rose-900/30 px-2 py-0.5 rounded">High
+              Priority</span>
+          </div>
+          <p class="text-3xl font-extrabold text-rose-500 mt-2" id="admin-critical-kpi">2</p>
+          <p class="text-xs text-rose-500 mt-1">Requires Immediate Action</p>
+        </div>
+
+        <div class="bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase text-[var(--muted-foreground)]">Avg Resolution Time</span>
+            <span class="text-xs font-bold text-purple-500 bg-purple-100 dark:bg-purple-900/30 px-2 py-0.5 rounded">AI
+              Optimized</span>
+          </div>
+          <p class="text-3xl font-extrabold text-[var(--foreground)] mt-2">18.4 hrs</p>
+          <p class="text-xs text-emerald-500 mt-1">↓ 3.2 hrs improvement</p>
+        </div>
+
+        <div class="bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase text-[var(--muted-foreground)]">Satisfaction Rate</span>
+            <span
+              class="text-xs font-bold text-emerald-500 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded">CSAT</span>
+          </div>
+          <p class="text-3xl font-extrabold text-emerald-500 mt-2">4.7 / 5.0</p>
+          <p class="text-xs text-[var(--muted-foreground)] mt-1">Based on 142 reviews</p>
+        </div>
+      </div>
+
+      <!-- Analytics Charts Overview -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Distribution by Category Chart -->
+        <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-2xl shadow-sm lg:col-span-2">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-base text-[var(--foreground)]">Complaints Volume by Department</h3>
+            <span class="text-xs text-[var(--muted-foreground)]">Auto-Categorized</span>
+          </div>
+
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between text-xs font-medium mb-1">
+                <span>Public Works & Infrastructure</span>
+                <span class="font-bold">40% (4 complaints)</span>
+              </div>
+              <div class="w-full bg-[var(--background)] rounded-full h-3 border border-[var(--border)] overflow-hidden">
+                <div class="bg-blue-600 h-3 rounded-full" style="width: 40%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-medium mb-1">
+                <span>Sanitation & Waste Management</span>
+                <span class="font-bold">30% (3 complaints)</span>
+              </div>
+              <div class="w-full bg-[var(--background)] rounded-full h-3 border border-[var(--border)] overflow-hidden">
+                <div class="bg-emerald-500 h-3 rounded-full" style="width: 30%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-medium mb-1">
+                <span>Electrical & Power Supply</span>
+                <span class="font-bold">20% (2 complaints)</span>
+              </div>
+              <div class="w-full bg-[var(--background)] rounded-full h-3 border border-[var(--border)] overflow-hidden">
+                <div class="bg-amber-500 h-3 rounded-full" style="width: 20%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-medium mb-1">
+                <span>Water Supply & Sewage</span>
+                <span class="font-bold">10% (1 complaint)</span>
+              </div>
+              <div class="w-full bg-[var(--background)] rounded-full h-3 border border-[var(--border)] overflow-hidden">
+                <div class="bg-indigo-500 h-3 rounded-full" style="width: 10%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Insights & SLA Monitor -->
+        <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-2xl shadow-sm space-y-4">
+          <h3 class="font-bold text-base text-[var(--foreground)] flex items-center space-x-2">
+            <span>🤖</span>
+            <span>AI Risk & Sentiment Insights</span>
+          </h3>
+
+          <div class="bg-indigo-500/10 border border-indigo-500/20 p-3 rounded-xl space-y-2 text-xs">
+            <div class="flex items-center justify-between font-semibold text-indigo-500">
+              <span>High Alert Cluster Detected</span>
+              <span>Sector 14</span>
+            </div>
+            <p class="text-[var(--muted-foreground)]">3 water pipeline failure reports received within 2 hours. AI
+              engine suggests merging into <strong>Master Incident #INC-9042</strong>.</p>
+          </div>
+
+          <div class="bg-rose-500/10 border border-rose-500/20 p-3 rounded-xl space-y-2 text-xs">
+            <div class="flex items-center justify-between font-semibold text-rose-500">
+              <span>SLA Breach Warning</span>
+              <span>Priority: Critical</span>
+            </div>
+            <p class="text-[var(--muted-foreground)]">Complaint #CMP-1002 (Exposed high-voltage wire) has 45 minutes
+              remaining on SLA guarantee.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Complaints Management Table -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm space-y-4">
+        <div
+          class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-[var(--border)]">
+          <div>
+            <h3 class="text-lg font-bold text-[var(--foreground)]">Central Complaint Queue</h3>
+            <p class="text-xs text-[var(--muted-foreground)]">Manage, reassign, update status and interact with citizens
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <input type="text" id="admin-search" oninput="renderAdminTable()"
+              placeholder="Search title, ID, location..."
+              class="bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-lg text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 w-48 sm:w-64">
+
+            <select id="admin-filter-dept" onchange="renderAdminTable()"
+              class="bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-lg text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="ALL">All Departments</option>
+              <option value="Public Works">Public Works</option>
+              <option value="Sanitation">Sanitation</option>
+              <option value="Electrical">Electrical</option>
+              <option value="Water Supply">Water Supply</option>
+            </select>
+
+            <select id="admin-filter-priority" onchange="renderAdminTable()"
+              class="bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-lg text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="ALL">All Priorities</option>
+              <option value="Critical">Critical</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead
+              class="bg-[var(--background)] text-[var(--muted-foreground)] uppercase text-xs border-b border-[var(--border)]">
+              <tr>
+                <th class="py-3 px-3">Ticket ID</th>
+                <th class="py-3 px-3">Title & Category</th>
+                <th class="py-3 px-3">Location</th>
+                <th class="py-3 px-3">AI Urgency / SLA</th>
+                <th class="py-3 px-3">Status</th>
+                <th class="py-3 px-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body" class="divide-y divide-[var(--border)]">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL: NEW COMPLAINT REGISTRATION FORM -->
+  <div id="new-complaint-modal"
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div
+      class="bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-2xl max-w-xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+
+      <div class="flex items-center justify-between border-b border-[var(--border)] pb-3 mb-4">
+        <div>
+          <h3 class="text-lg font-bold">Submit New Complaint</h3>
+          <p class="text-xs text-[var(--muted-foreground)]">AI will auto-analyze your description to route & assign
+            priority.</p>
+        </div>
+        <button onclick="closeNewModal()"
+          class="text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-xl font-bold">✕</button>
+      </div>
+
+      <form id="complaint-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-1">Title / Brief Subject
+            *</label>
+          <input type="text" id="input-title" required oninput="runAiAnalysisPreview()"
+            placeholder="e.g., Severe water pipeline leakage near Park Street"
+            class="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-1">Detailed Description
+            *</label>
+          <textarea id="input-desc" required rows="3" oninput="runAiAnalysisPreview()"
+            placeholder="Describe what happened, exact landmark, and any hazard..."
+            class="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+
+        <!-- AI AUTO-CLASSIFICATION PREVIEW CARD -->
+        <div class="bg-blue-500/10 border border-blue-500/30 p-3 rounded-xl space-y-2">
+          <div class="flex items-center justify-between text-xs font-bold text-blue-600">
+            <span class="flex items-center space-x-1">
+              <span>✨</span>
+              <span>AI Auto-Classification & Urgency Score</span>
+            </span>
+            <span id="ai-status-badge" class="bg-blue-500 text-white px-2 py-0.5 rounded text-[10px]">Active</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <span class="text-[var(--muted-foreground)]">Suggested Category:</span>
+              <p class="font-bold text-[var(--foreground)]" id="ai-detected-dept">Public Works</p>
+            </div>
+            <div>
+              <span class="text-[var(--muted-foreground)]">Calculated Urgency:</span>
+              <p class="font-bold text-amber-500" id="ai-detected-urgency">Medium (Score: 45/100)</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-1">Category
+              Override</label>
+            <select id="input-dept"
+              class="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="Public Works">Public Works & Roads</option>
+              <option value="Sanitation">Sanitation & Garbage</option>
+              <option value="Electrical">Electrical & Streetlights</option>
+              <option value="Water Supply">Water Supply & Sewage</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-1">Location / Address
+              *</label>
+            <input type="text" id="input-location" required placeholder="e.g., Sector 4, Block B, Main Road"
+              class="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-1">Citizen Contact
+            Number</label>
+          <input type="tel" id="input-phone" placeholder="+91 9876543210"
+            class="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div class="pt-3 flex justify-end space-x-3 border-t border-[var(--border)]">
+          <button type="button" onclick="closeNewModal()"
+            class="px-4 py-2 text-sm font-medium rounded-xl border border-[var(--border)] hover:bg-[var(--background)] transition-all">Cancel</button>
+          <button type="submit"
+            class="px-5 py-2 text-sm font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all">Submit
+            Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: DETAILED COMPLAINT VIEW / ACTION -->
+  <div id="detail-modal"
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div
+      class="bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto space-y-4">
+
+      <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+        <div class="flex items-center space-x-2">
+          <span id="modal-ticket-id"
+            class="text-xs font-mono font-bold bg-blue-500/20 text-blue-500 px-2.5 py-1 rounded-lg">#CMP-1001</span>
+          <span id="modal-ticket-priority" class="text-xs px-2.5 py-1 rounded-lg font-bold">High Priority</span>
+        </div>
+        <button onclick="closeDetailModal()"
+          class="text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-xl font-bold">✕</button>
+      </div>
+
+      <div class="space-y-2">
+        <h2 id="modal-ticket-title" class="text-xl font-bold">Title goes here</h2>
+        <div class="flex flex-wrap items-center gap-3 text-xs text-[var(--muted-foreground)]">
+          <span>📍 <strong id="modal-ticket-loc">Location</strong></span>
+          <span>🏢 <strong id="modal-ticket-dept">Department</strong></span>
+          <span>📅 Submitted: <strong id="modal-ticket-date">Date</strong></span>
+        </div>
+      </div>
+
+      <div class="bg-[var(--background)] p-4 rounded-xl border border-[var(--border)] text-sm leading-relaxed"
+        id="modal-ticket-desc">
+        Full description of complaint...
+      </div>
+
+      <!-- AI Sentiment & Keyword Tag Analysis -->
+      <div class="bg-indigo-500/10 border border-indigo-500/20 p-3 rounded-xl space-y-2 text-xs">
+        <h4 class="font-bold text-indigo-500 flex items-center space-x-1">
+          <span>🧠</span>
+          <span>AI Categorization & Keyword Extraction</span>
+        </h4>
+        <div class="flex flex-wrap gap-1.5" id="modal-ticket-keywords">
+          <span class="bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded text-[11px]">#leakage</span>
+          <span class="bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded text-[11px]">#hazard</span>
+        </div>
+      </div>
+
+      <!-- Status Timeline Log -->
+      <div>
+        <h4 class="text-xs font-bold uppercase text-[var(--muted-foreground)] mb-2">Resolution Audit Log & Timeline</h4>
+        <div id="modal-timeline" class="space-y-2 text-xs border-l-2 border-blue-500 pl-3">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Admin Actions Section (Visible when in Admin mode) -->
+      <div id="modal-admin-actions"
+        class="bg-[var(--background)] p-4 rounded-xl border border-[var(--border)] space-y-3">
+        <h4 class="text-xs font-bold uppercase text-[var(--muted-foreground)]">Update Ticket Status & Staff Notes</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-[var(--muted-foreground)] mb-1">Update Status</label>
+            <select id="update-status-select"
+              class="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg text-sm p-2 text-[var(--foreground)]">
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+              <option value="Escalated">Escalated</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[var(--muted-foreground)] mb-1">Assign Technician /
+              Staff</label>
+            <input type="text" id="update-assigned-staff" placeholder="e.g. Officer R. Sharma"
+              class="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg text-sm p-2 text-[var(--foreground)]">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[var(--muted-foreground)] mb-1">Internal Note / Response to
+            Citizen</label>
+          <input type="text" id="update-note" placeholder="Add update or resolution details..."
+            class="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg text-sm p-2 text-[var(--foreground)]">
+        </div>
+        <button onclick="saveAdminUpdate()"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl text-sm transition-all shadow">
+          Apply Changes & Notify Citizen
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let mockComplaints = [
+      {
+        id: "CMP-1001",
+        title: "Major Pothole causing traffic block on Ring Road",
+        description: "A deep 2-foot pothole has opened up near the main traffic junction. Multiple vehicles damaged today.",
+        category: "Public Works",
+        location: "Ring Road, Junction 4",
+        urgency: "High",
+        score: 88,
+        status: "In Progress",
+        createdAt: "2026-10-06 09:30 AM",
+        slaRemaining: "4 hrs 15 mins",
+        assignedStaff: "Officer V. Kumar",
+        keywords: ["#pothole", "#traffic_hazard", "#road_damage"],
+        timeline: [
+          { time: "2026-10-06 09:30 AM", status: "Submitted", note: "Ticket filed by Citizen via Mobile App" },
+          { time: "2026-10-06 09:32 AM", status: "AI Analysis", note: "Auto-categorized under Public Works (Priority Score: 88/100)" },
+          { time: "2026-10-06 10:15 AM", status: "In Progress", note: "Dispatched repair team. Assigned to Officer V. Kumar" }
+        ]
+      },
+      {
+        id: "CMP-1002",
+        title: "Exposed live electrical wire near Primary School",
+        description: "Storm last night broke a transformer wire. Sparks visible near school entrance gate!",
+        category: "Electrical",
+        location: "Green Valley School, Sector 12",
+        urgency: "Critical",
+        score: 98,
+        status: "Pending",
+        createdAt: "2026-10-06 11:15 AM",
+        slaRemaining: "45 mins (Urgent!)",
+        assignedStaff: "Unassigned",
+        keywords: ["#electrical_hazard", "#critical_risk", "#live_wire"],
+        timeline: [
+          { time: "2026-10-06 11:15 AM", status: "Submitted", note: "Ticket filed by Citizen" },
+          { time: "2026-10-06 11:16 AM", status: "AI Escalation", note: "SLA set to 2 hours due to high life-risk keywords." }
+        ]
+      },
+      {
+        id: "CMP-1003",
+        title: "Garbage overflow & uncollected trash for 4 days",
+        description: "Community dumpsters overflowing causing foul odor and stray dog menace.",
+        category: "Sanitation",
+        location: "Market Complex, Block C",
+        urgency: "Medium",
+        score: 55,
+        status: "Resolved",
+        createdAt: "2026-10-04 02:00 PM",
+        slaRemaining: "Completed",
+        assignedStaff: "Sanitation Crew #12",
+        keywords: ["#waste_management", "#sanitation", "#odor"],
+        timeline: [
+          { time: "2026-10-04 02:00 PM", status: "Submitted", note: "Ticket filed" },
+          { time: "2026-10-04 04:30 PM", status: "In Progress", note: "Truck dispatched" },
+          { time: "2026-10-05 10:00 AM", status: "Resolved", note: "Dumpster emptied and area disinfected." }
+        ]
+      },
+      {
+        id: "CMP-1004",
+        title: "Contaminated muddy water from municipal supply pipeline",
+        description: "Tap water coming out brown and turbid in whole apartment complex since morning.",
+        category: "Water Supply",
+        location: "Sunrise Apartments, Phase 2",
+        urgency: "High",
+        score: 82,
+        status: "In Progress",
+        createdAt: "2026-10-06 07:45 AM",
+        slaRemaining: "6 hrs 30 mins",
+        assignedStaff: "Eng. M. Patel",
+        keywords: ["#water_contamination", "#public_health"],
+        timeline: [
+          { time: "2026-10-06 07:45 AM", status: "Submitted", note: "Ticket filed by Resident Assn" },
+          { time: "2026-10-06 08:30 AM", status: "In Progress", note: "Pipeline testing started by Water Dept." }
+        ]
+      },
+      {
+        id: "CMP-1005",
+        title: "Streetlights non-functional along 2km stretch",
+        description: "Dark road stretch creating safety hazard for night commuters.",
+        category: "Electrical",
+        location: "Outer Ring Road Extension",
+        urgency: "Medium",
+        score: 60,
+        status: "Resolved",
+        createdAt: "2026-10-03 08:00 PM",
+        slaRemaining: "Completed",
+        assignedStaff: "Lighting Tech Team B",
+        keywords: ["#streetlights", "#darkness_hazard"],
+        timeline: [
+          { time: "2026-10-03 08:00 PM", status: "Submitted", note: "Ticket registered" },
+          { time: "2026-10-04 09:00 AM", status: "Resolved", note: "Replaced 14 blown LED fixtures." }
+        ]
+      }
+    ];
+
+    let currentRole = 'citizen';
+    let selectedTicketId = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCitizenComplaints();
+      renderAdminTable();
+      updateKpis();
+    });
+
+    function switchView(role) {
+      currentRole = role;
+      const citizenBtn = document.getElementById('btn-citizen-view');
+      const adminBtn = document.getElementById('btn-admin-view');
+      const citizenSec = document.getElementById('citizen-portal');
+      const adminSec = document.getElementById('admin-portal');
+
+      if (role === 'citizen') {
+        citizenBtn.className = "px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 bg-blue-600 text-white shadow-sm";
+        adminBtn.className = "px-4 py-1.5 rounded-lg text-sm font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all duration-200";
+        citizenSec.classList.remove('hidden');
+        adminSec.classList.add('hidden');
+        renderCitizenComplaints();
+      } else {
+        adminBtn.className = "px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 bg-blue-600 text-white shadow-sm";
+        citizenBtn.className = "px-4 py-1.5 rounded-lg text-sm font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all duration-200";
+        adminSec.classList.remove('hidden');
+        citizenSec.classList.add('hidden');
+        renderAdminTable();
+        updateKpis();
+      }
+    }
+
+    function runAiAnalysisPreview() {
+      const title = document.getElementById('input-title').value.toLowerCase();
+      const desc = document.getElementById('input-desc').value.toLowerCase();
+      const fullText = title + " " + desc;
+
+      let dept = "Public Works";
+      let urgency = "Medium";
+      let score = 45;
+
+      if (fullText.includes("wire") || fullText.includes("transformer") || fullText.includes("electric") || fullText.includes("light") || fullText.includes("spark")) {
+        dept = "Electrical";
+      } else if (fullText.includes("water") || fullText.includes("leak") || fullText.includes("sewage") || fullText.includes("drain") || fullText.includes("pipe")) {
+        dept = "Water Supply";
+      } else if (fullText.includes("garbage") || fullText.includes("trash") || fullText.includes("waste") || fullText.includes("smell") || fullText.includes("clean")) {
+        dept = "Sanitation";
+      }
+
+      if (fullText.includes("fire") || fullText.includes("spark") || fullText.includes("danger") || fullText.includes("hazard") || fullText.includes("school") || fullText.includes("hospital")) {
+        urgency = "Critical";
+        score = 95;
+      } else if (fullText.includes("leak") || fullText.includes("block") || fullText.includes("urgent") || fullText.includes("broken")) {
+        urgency = "High";
+        score = 80;
+      } else if (fullText.length > 5) {
+        urgency = "Medium";
+        score = 50;
+      }
+
+      document.getElementById('ai-detected-dept').innerText = dept;
+      document.getElementById('ai-detected-urgency').innerText = `${urgency} (Score: ${score}/100)`;
+      document.getElementById('input-dept').value = dept;
+    }
+
+    function renderCitizenComplaints() {
+      const listEl = document.getElementById('citizen-complaints-list');
+      const filter = document.getElementById('citizen-filter-status').value;
+
+      let filtered = mockComplaints.filter(c => filter === 'ALL' || c.status === filter);
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `<div class="text-center py-8 text-[var(--muted-foreground)] text-sm">No complaints found matching this status filter.</div>`;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(c => {
+        let statusBadge = getStatusBadgeHtml(c.status);
+        let urgencyBadge = getUrgencyBadgeHtml(c.urgency);
+
+        return `
+          <div onclick="openDetailModal('${c.id}')" class="p-4 border border-[var(--border)] rounded-xl hover:border-blue-500/50 hover:shadow-md transition-all cursor-pointer bg-[var(--background)]/50 space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center space-x-2">
+                <span class="font-mono font-bold text-xs bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded">${c.id}</span>
+                ${urgencyBadge}
+              </div>
+              <div>${statusBadge}</div>
+            </div>
+
+            <h4 class="font-bold text-base text-[var(--foreground)]">${c.title}</h4>
+            <p class="text-xs text-[var(--muted-foreground)] line-clamp-2">${c.description}</p>
+
+            <div class="flex flex-wrap items-center justify-between pt-2 border-t border-[var(--border)]/50 text-xs text-[var(--muted-foreground)]">
+              <span>📍 ${c.location} • 🏢 ${c.category}</span>
+              <span>📅 ${c.createdAt}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAdminTable() {
+      const tbody = document.getElementById('admin-table-body');
+      const search = document.getElementById('admin-search').value.toLowerCase();
+      const deptFilter = document.getElementById('admin-filter-dept').value;
+      const priorityFilter = document.getElementById('admin-filter-priority').value;
+
+      let filtered = mockComplaints.filter(c => {
+        const matchesSearch = c.title.toLowerCase().includes(search) || c.id.toLowerCase().includes(search) || c.location.toLowerCase().includes(search);
+        const matchesDept = deptFilter === 'ALL' || c.category === deptFilter;
+        const matchesPriority = priorityFilter === 'ALL' || c.urgency === priorityFilter;
+        return matchesSearch && matchesDept && matchesPriority;
+      });
+
+      tbody.innerHTML = filtered.map(c => `
+        <tr class="hover:bg-[var(--background)]/50 transition-colors">
+          <td class="py-3 px-3 font-mono font-bold text-xs text-blue-500">${c.id}</td>
+          <td class="py-3 px-3">
+            <div class="font-semibold text-[var(--foreground)]">${c.title}</div>
+            <div class="text-xs text-[var(--muted-foreground)]">${c.category} • Assigned: ${c.assignedStaff}</div>
+          </td>
+          <td class="py-3 px-3 text-xs text-[var(--muted-foreground)]">${c.location}</td>
+          <td class="py-3 px-3">
+            <div>${getUrgencyBadgeHtml(c.urgency)}</div>
+            <div class="text-[11px] text-[var(--muted-foreground)] mt-0.5">SLA: ${c.slaRemaining}</div>
+          </td>
+          <td class="py-3 px-3">${getStatusBadgeHtml(c.status)}</td>
+          <td class="py-3 px-3 text-right">
+            <button onclick="openDetailModal('${c.id}')" class="px-3 py-1 bg-blue-600/10 hover:bg-blue-600/20 text-blue-600 font-semibold rounded-lg text-xs transition-all">
+              Inspect & Act
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updateKpis() {
+      const total = mockComplaints.length;
+      const pending = mockComplaints.filter(c => c.status === 'Pending' || c.status === 'In Progress').length;
+      const resolved = mockComplaints.filter(c => c.status === 'Resolved').length;
+      const critical = mockComplaints.filter(c => c.urgency === 'Critical' || c.urgency === 'High').length;
+
+      document.getElementById('citizen-total-count').innerText = total;
+      document.getElementById('citizen-pending-count').innerText = pending;
+      document.getElementById('citizen-resolved-count').innerText = resolved;
+      document.getElementById('admin-total-kpi').innerText = total;
+      document.getElementById('admin-critical-kpi').innerText = critical;
+    }
+
+    function getStatusBadgeHtml(status) {
+      if (status === 'Resolved') {
+        return `<span class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 font-bold px-2.5 py-0.5 rounded-full text-xs">✅ Resolved</span>`;
+      } else if (status === 'In Progress') {
+        return `<span class="bg-amber-500/10 border border-amber-500/30 text-amber-500 font-bold px-2.5 py-0.5 rounded-full text-xs">⏳ In Progress</span>`;
+      } else if (status === 'Escalated') {
+        return `<span class="bg-rose-500/10 border border-rose-500/30 text-rose-500 font-bold px-2.5 py-0.5 rounded-full text-xs">🚨 Escalated</span>`;
+      }
+      return `<span class="bg-blue-500/10 border border-blue-500/30 text-blue-500 font-bold px-2.5 py-0.5 rounded-full text-xs">📋 Pending</span>`;
+    }
+
+    function getUrgencyBadgeHtml(urgency) {
+      if (urgency === 'Critical') {
+        return `<span class="bg-rose-600 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase tracking-wide">Critical</span>`;
+      } else if (urgency === 'High') {
+        return `<span class="bg-amber-600 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase tracking-wide">High Priority</span>`;
+      }
+      return `<span class="bg-blue-600 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase tracking-wide">Medium</span>`;
+    }
+
+    function openNewModal() {
+      document.getElementById('new-complaint-modal').classList.remove('hidden');
+    }
+
+    function closeNewModal() {
+      document.getElementById('new-complaint-modal').classList.add('hidden');
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById('input-title').value;
+      const desc = document.getElementById('input-desc').value;
+      const dept = document.getElementById('input-dept').value;
+      const loc = document.getElementById('input-location').value;
+
+      const aiText = title.toLowerCase() + " " + desc.toLowerCase();
+      let urgency = "Medium";
+      let score = 55;
+      if (aiText.includes("fire") || aiText.includes("spark") || aiText.includes("wire") || aiText.includes("danger")) {
+        urgency = "Critical"; score = 95;
+      } else if (aiText.includes("leak") || aiText.includes("block") || aiText.includes("burst")) {
+        urgency = "High"; score = 82;
+      }
+
+      const newId = `CMP-${1000 + mockComplaints.length + 1}`;
+      const now = new Date().toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+
+      const newComplaint = {
+        id: newId,
+        title: title,
+        description: desc,
+        category: dept,
+        location: loc,
+        urgency: urgency,
+        score: score,
+        status: "Pending",
+        createdAt: now,
+        slaRemaining: urgency === 'Critical' ? '2 hrs 00 mins' : '24 hrs 00 mins',
+        assignedStaff: "Unassigned (Auto-Routing)",
+        keywords: [`#${dept.toLowerCase().replace(' ', '_')}`, "#citizen_report"],
+        timeline: [
+          { time: now, status: "Submitted", note: "Filed via Citizen Web Portal" },
+          { time: now, status: "AI Analysis", note: `Auto-assigned to ${dept} Department (Priority: ${urgency})` }
+        ]
+      };
+
+      mockComplaints.unshift(newComplaint);
+      closeNewModal();
+      document.getElementById('complaint-form').reset();
+
+      renderCitizenComplaints();
+      renderAdminTable();
+      updateKpis();
+
+      alert(`Success! Complaint registered with Ticket ID ${newId}`);
+    }
+
+    function openDetailModal(id) {
+      selectedTicketId = id;
+      const ticket = mockComplaints.find(c => c.id === id);
+      if (!ticket) return;
+
+      document.getElementById('modal-ticket-id').innerText = ticket.id;
+      document.getElementById('modal-ticket-title').innerText = ticket.title;
+      document.getElementById('modal-ticket-loc').innerText = ticket.location;
+      document.getElementById('modal-ticket-dept').innerText = ticket.category;
+      document.getElementById('modal-ticket-date').innerText = ticket.createdAt;
+      document.getElementById('modal-ticket-desc').innerText = ticket.description;
+      document.getElementById('update-status-select').value = ticket.status;
+      document.getElementById('update-assigned-staff').value = ticket.assignedStaff === "Unassigned (Auto-Routing)" ? "" : ticket.assignedStaff;
+
+      const prioEl = document.getElementById('modal-ticket-priority');
+      prioEl.outerHTML = `<span id="modal-ticket-priority">${getUrgencyBadgeHtml(ticket.urgency)}</span>`;
+
+      document.getElementById('modal-ticket-keywords').innerHTML = ticket.keywords.map(k => `
+        <span class="bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded text-[11px] font-medium">${k}</span>
+      `).join('');
+
+      document.getElementById('modal-timeline').innerHTML = ticket.timeline.map(t => `
+        <div class="relative pl-2">
+          <div class="flex items-center justify-between text-[11px] font-bold text-[var(--foreground)]">
+            <span>${t.status}</span>
+            <span class="text-[var(--muted-foreground)] font-normal">${t.time}</span>
+          </div>
+          <p class="text-[var(--muted-foreground)] mt-0.5">${t.note}</p>
+        </div>
+      `).join('');
+
+      const adminActions = document.getElementById('modal-admin-actions');
+      if (currentRole === 'admin') {
+        adminActions.classList.remove('hidden');
+      } else {
+        adminActions.classList.add('hidden');
+      }
+
+      document.getElementById('detail-modal').classList.remove('hidden');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detail-modal').classList.add('hidden');
+      selectedTicketId = null;
+    }
+
+    function saveAdminUpdate() {
+      if (!selectedTicketId) return;
+      const ticket = mockComplaints.find(c => c.id === selectedTicketId);
+      if (!ticket) return;
+
+      const newStatus = document.getElementById('update-status-select').value;
+      const staff = document.getElementById('update-assigned-staff').value.trim();
+      const note = document.getElementById('update-note').value.trim();
+
+      ticket.status = newStatus;
+      if (staff) ticket.assignedStaff = staff;
+
+      const now = new Date().toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+      ticket.timeline.push({
+        time: now,
+        status: newStatus,
+        note: note ? note : `Status changed to ${newStatus} by Admin`
+      });
+
+      closeDetailModal();
+      renderCitizenComplaints();
+      renderAdminTable();
+      updateKpis();
+    }
+  </script>
+</body>
+
+</html>

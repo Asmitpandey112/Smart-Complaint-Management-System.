@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-gray-950;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Custom interactive classes */
+.card-hover {
+  @apply transition-all duration-200 hover:-translate-y-1 hover:shadow-xl;
+}
+
+/* =========================================
+   animate-in utility (replaces tailwindcss-animate plugin)
+   Usage: animate-in fade-in | slide-in-from-top-1
+   ========================================= */
+@keyframes scms-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scms-slide-in-top {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Base trigger class */
+.animate-in {
+  animation-fill-mode: both;
+  animation-duration: 150ms;
+  animation-timing-function: ease-out;
+}
+
+/* Individual enter animations */
+.animate-in.fade-in,
+.fade-in {
+  animation-name: scms-fade-in;
+}
+
+.animate-in.slide-in-from-top-1 {
+  animation-name: scms-slide-in-top;
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-700 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400 dark:bg-slate-600;
+}

@@ -1,0 +1,232 @@
+[
+  {
+    "id": "CMP-1006",
+    "title": "potholes on the road near my house.",
+    "description": "There are many potholes on road near my home due to this I am having troubled to go to college .... Many vehicles are getting damaged and some people has fall due to the potholes....",
+    "category": "Public Works",
+    "location": "Keshtopur Kolkata ",
+    "lat": 18.537584457700746,
+    "lng": 73.85751745668738,
+    "phone": "7654551031",
+    "urgency": "High",
+    "score": 80,
+    "status": "Pending",
+    "createdAt": "10/07/2026, 12:34 AM",
+    "slaDueAt": "2026-10-07T07:04:20.617Z",
+    "assignedStaff": "Unassigned (Auto-Routing)",
+    "imageUrl": "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=400&auto=format&fit=crop&q=60",
+    "keywords": [
+      "#general_report",
+      "#public_works",
+      "#high_priority"
+    ],
+    "rating": null,
+    "feedback": null,
+    "timeline": [
+      {
+        "time": "10/07/2026, 12:34 AM",
+        "status": "Submitted",
+        "note": "Ticket submitted via Citizen Portal."
+      },
+      {
+        "time": "10/07/2026, 12:34 AM",
+        "status": "AI Analysis",
+        "note": "Auto-assigned to Public Works Dept. Urgency: High (Score: 80/100)"
+      },
+      {
+        "time": "10/07/2026, 12:34 AM",
+        "status": "Pending",
+        "note": "Status updated to Pending by Staff"
+      }
+    ]
+  },
+  {
+    "id": "CMP-1005",
+    "title": "Broken streetlight in sector v ",
+    "description": "from few days streetlight was disturb ......",
+    "category": "Public Works",
+    "location": "ssector v ",
+    "phone": "9665986269",
+    "urgency": "High",
+    "score": 80,
+    "status": "Pending",
+    "createdAt": "10/07/2026, 12:22 AM",
+    "slaDueAt": "2026-10-07T06:52:33.671Z",
+    "assignedStaff": "Unassigned (Auto-Routing)",
+    "keywords": [
+      "#general_report",
+      "#electrical",
+      "#high_priority"
+    ],
+    "timeline": [
+      {
+        "time": "10/07/2026, 12:22 AM",
+        "status": "Submitted",
+        "note": "Ticket submitted via Citizen Portal."
+      },
+      {
+        "time": "10/07/2026, 12:22 AM",
+        "status": "AI Analysis",
+        "note": "Auto-assigned to Public Works Dept. Urgency: High (Score: 80/100)"
+      },
+      {
+        "time": "10/07/2026, 12:23 AM",
+        "status": "Pending",
+        "note": "Status updated to Pending by Admin Officer"
+      },
+      {
+        "time": "10/07/2026, 12:31 AM",
+        "status": "Pending",
+        "note": "Status updated to Pending by Staff"
+      },
+      {
+        "time": "10/07/2026, 12:31 AM",
+        "status": "Pending",
+        "note": "Status updated to Pending by Staff"
+      },
+      {
+        "time": "10/07/2026, 12:31 AM",
+        "status": "Pending",
+        "note": "Status updated to Pending by Staff"
+      }
+    ]
+  },
+  {
+    "id": "CMP-1001",
+    "title": "Major Pothole causing traffic block on Ring Road",
+    "description": "A deep 2-foot pothole has opened up near the main traffic junction. Multiple vehicles damaged today.",
+    "category": "Public Works",
+    "location": "Ring Road, Junction 4",
+    "phone": "+91 9876543210",
+    "urgency": "High",
+    "score": 88,
+    "status": "In Progress",
+    "createdAt": "2026-10-06 09:30 AM",
+    "slaDueAt": "2026-10-06T22:48:20.574Z",
+    "assignedStaff": "Officer V. Kumar",
+    "keywords": [
+      "#pothole",
+      "#traffic_hazard",
+      "#road_damage"
+    ],
+    "timeline": [
+      {
+        "time": "2026-10-06 09:30 AM",
+        "status": "Submitted",
+        "note": "Ticket filed by Citizen via Web App"
+      },
+      {
+        "time": "2026-10-06 09:32 AM",
+        "status": "AI Analysis",
+        "note": "Auto-categorized under Public Works (Priority Score: 88/100)"
+      },
+      {
+        "time": "2026-10-06 10:15 AM",
+        "status": "In Progress",
+        "note": "Dispatched repair team. Assigned to Officer V. Kumar"
+      },
+      {
+        "time": "10/07/2026, 12:31 AM",
+        "status": "In Progress",
+        "note": "Status updated to In Progress by Staff"
+      }
+    ]
+  },
+  {
+    "id": "CMP-1002",
+    "title": "Exposed live electrical wire near Primary School",
+    "description": "Storm last night broke a transformer wire. Sparks visible near school entrance gate!",
+    "category": "Electrical",
+    "location": "Green Valley School, Sector 12",
+    "phone": "+91 9811223344",
+    "urgency": "Critical",
+    "score": 98,
+    "status": "Pending",
+    "createdAt": "2026-10-06 11:15 AM",
+    "slaDueAt": "2026-10-06T19:48:20.575Z",
+    "assignedStaff": "Unassigned",
+    "keywords": [
+      "#electrical_hazard",
+      "#critical_risk",
+      "#live_wire"
+    ],
+    "timeline": [
+      {
+        "time": "2026-10-06 11:15 AM",
+        "status": "Submitted",
+        "note": "Ticket filed by Citizen"
+      },
+      {
+        "time": "2026-10-06 11:16 AM",
+        "status": "AI Escalation",
+        "note": "SLA set to 2 hours due to high life-risk keywords."
+      }
+    ]
+  },
+  {
+    "id": "CMP-1003",
+    "title": "Garbage overflow & uncollected trash for 4 days",
+    "description": "Community dumpsters overflowing causing foul odor and stray dog menace.",
+    "category": "Sanitation",
+    "location": "Market Complex, Block C",
+    "phone": "+91 9988776655",
+    "urgency": "Medium",
+    "score": 55,
+    "status": "Resolved",
+    "createdAt": "2026-10-04 02:00 PM",
+    "slaDueAt": "2026-10-06T08:48:20.576Z",
+    "assignedStaff": "Sanitation Crew #12",
+    "keywords": [
+      "#waste_management",
+      "#sanitation",
+      "#odor"
+    ],
+    "timeline": [
+      {
+        "time": "2026-10-04 02:00 PM",
+        "status": "Submitted",
+        "note": "Ticket filed"
+      },
+      {
+        "time": "2026-10-04 04:30 PM",
+        "status": "In Progress",
+        "note": "Truck dispatched"
+      },
+      {
+        "time": "2026-10-05 10:00 AM",
+        "status": "Resolved",
+        "note": "Dumpster emptied and area disinfected."
+      }
+    ]
+  },
+  {
+    "id": "CMP-1004",
+    "title": "Contaminated muddy water from municipal supply pipeline",
+    "description": "Tap water coming out brown and turbid in whole apartment complex since morning.",
+    "category": "Water Supply",
+    "location": "Sunrise Apartments, Phase 2",
+    "phone": "+91 9123456789",
+    "urgency": "High",
+    "score": 82,
+    "status": "In Progress",
+    "createdAt": "2026-10-06 07:45 AM",
+    "slaDueAt": "2026-10-07T00:48:20.576Z",
+    "assignedStaff": "Eng. M. Patel",
+    "keywords": [
+      "#water_contamination",
+      "#public_health"
+    ],
+    "timeline": [
+      {
+        "time": "2026-10-06 07:45 AM",
+        "status": "Submitted",
+        "note": "Ticket filed by Resident Assn"
+      },
+      {
+        "time": "2026-10-06 08:30 AM",
+        "status": "In Progress",
+        "note": "Pipeline testing started by Water Dept."
+      }
+    ]
+  }
+]

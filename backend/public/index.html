@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Complaint Management System - Advanced Visualization Dashboard</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+    ::-webkit-scrollbar-thumb { background: rgba(150,150,150,0.3); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(150,150,150,0.5); }
+    .toast-slide { animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .kanban-col { min-height: 450px; }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased font-sans min-h-screen">
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed top-5 right-5 z-50 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 text-sm font-semibold hidden toast-slide">
+    <span id="toast-icon">✅</span>
+    <span id="toast-message">Success message</span>
+  </div>
+
+  <!-- HEADER & NAVIGATION TAB BAR -->
+  <header class="border-b border-[var(--border)] bg-[var(--card)] sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-md">
+          ⚡
+        </div>
+        <div>
+          <h1 class="font-extrabold text-lg leading-tight tracking-tight text-[var(--foreground)]">SmartResolve AI</h1>
+          <p class="text-xs text-[var(--muted-foreground)] flex items-center space-x-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+            <span>Live REST API • Real-Time Visualizer</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Main Navigation Tabs -->
+      <nav class="hidden md:flex items-center bg-[var(--background)] p-1 rounded-xl border border-[var(--border)] shadow-inner text-xs font-semibold">
+        <button id="nav-citizen" onclick="switchMainTab('citizen')" class="px-3.5 py-1.5 rounded-lg transition-all duration-200 bg-blue-600 text-white shadow-sm flex items-center space-x-1.5">
+          <span>👤</span><span>Citizen Portal</span>
+        </button>
+        <button id="nav-admin" onclick="switchMainTab('admin')" class="px-3.5 py-1.5 rounded-lg transition-all duration-200 text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center space-x-1.5">
+          <span>🛡️</span><span>Admin Dashboard</span>
+        </button>
+        <button id="nav-kanban" onclick="switchMainTab('kanban')" class="px-3.5 py-1.5 rounded-lg transition-all duration-200 text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center space-x-1.5">
+          <span>📊</span><span>Kanban Board</span>
+        </button>
+        <button id="nav-map" onclick="switchMainTab('map')" class="px-3.5 py-1.5 rounded-lg transition-all duration-200 text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center space-x-1.5">
+          <span>🗺️</span><span>Risk Heatmap</span>
+        </button>
+      </nav>
+
+      <!-- Quick Actions -->
+      <div class="flex items-center space-x-2">
+        <a href="/api/export" target="_blank" class="hidden sm:flex items-center space-x-1 text-xs font-semibold px-3 py-2 rounded-xl border border-[var(--border)] hover:bg-[var(--background)] transition-all">
+          <span>📥</span><span>Export CSV</span>
+        </a>
+        <button onclick="openModal('new-modal')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-3.5 py-2 rounded-xl shadow-md transition-all">
+          + File Complaint
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Mobile Sub-Nav -->
+    <div class="md:hidden flex overflow-x-auto border-t border-[var(--border)] px-4 py-2 space-x-2 text-xs font-medium">
+      <button onclick="switchMainTab('citizen')" class="px-3 py-1 bg-blue-600 text-white rounded-lg">Citizen</button>
+      <button onclick="switchMainTab('admin')" class="px-3 py-1 bg-[var(--background)] text-[var(--foreground)] rounded-lg">Admin</button>
+      <button onclick="switchMainTab('kanban')" class="px-3 py-1 bg-[var(--background)] text-[var(--foreground)] rounded-lg">Kanban</button>
+      <button onclick="switchMainTab('map')" class="px-3 py-1 bg-[var(--background)] text-[var(--foreground)] rounded-lg">Map</button>
+    </div>
+  </header>
+      <!-- Dark Mode Toggle -->
+      <button id="theme-toggle" class="ml-4 px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none" title="Toggle Dark Mode">
+        🌙
+      </button>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ======================================================== -->
+    <!-- TAB 1: CITIZEN PORTAL                                    -->
+    <!-- ======================================================== -->
+    <div id="tab-citizen" class="space-y-6">
+      
+      <!-- Hero Banner -->
+      <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 text-white rounded-2xl p-6 shadow-xl relative overflow-hidden">
+        <div class="relative z-10 max-w-2xl space-y-2">
+          <span class="bg-white/20 backdrop-blur-md text-white text-xs px-3 py-1 rounded-full border border-white/30 font-semibold uppercase tracking-wider">AI Automated Triage</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Smart Public Grievance Portal</h2>
+          <p class="text-blue-100 text-sm leading-relaxed">Report civic issues, track real-time resolution progress, and rate municipal service response with AI-powered automatic department routing.</p>
+          <div class="pt-2 flex flex-wrap gap-3">
+            <button onclick="openModal('new-modal')" class="bg-white text-blue-700 hover:bg-blue-50 px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-all transform hover:-translate-y-0.5">
+              🚀 File New Complaint Now
+            </button>
+            <button onclick="fetchCitizenComplaints()" class="bg-blue-500/30 hover:bg-blue-500/40 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all border border-white/20 flex items-center space-x-1">
+              <span>🔄</span><span>Sync Statuses</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Metrics -->
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div class="bg-[var(--card)] border border-[var(--border)] p-4 rounded-2xl shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs text-[var(--muted-foreground)] uppercase font-bold tracking-wide">Total Filed</p>
+            <p class="text-2xl font-extrabold text-[var(--foreground)] mt-0.5" id="c-stat-total">0</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-xl">📋</div>
+        </div>
+        <div class="bg-[var(--card)] border border-[var(--border)] p-4 rounded-2xl shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs text-[var(--muted-foreground)] uppercase font-bold tracking-wide">Pending Action</p>
+            <p class="text-2xl font-extrabold text-blue-500 mt-0.5" id="c-stat-pending">0</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold text-xl">⏳</div>
+        </div>
+        <div class="bg-[var(--card)] border border-[var(--border)] p-4 rounded-2xl shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs text-[var(--muted-foreground)] uppercase font-bold tracking-wide">In Progress</p>
+            <p class="text-2xl font-extrabold text-amber-500 mt-0.5" id="c-stat-inprogress">0</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold text-xl">🔧</div>
+        </div>
+        <div class="bg-[var(--card)] border border-[var(--border)] p-4 rounded-2xl shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs text-[var(--muted-foreground)] uppercase font-bold tracking-wide">Resolved</p>
+            <p class="text-2xl font-extrabold text-emerald-500 mt-0.5" id="c-stat-resolved">0</p>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold text-xl">✅</div>
+        </div>
+      </div>
+
+      <!-- Complaints List with Live SLA Timers -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[var(--border)]">
+          <div>
+            <h3 class="text-lg font-bold text-[var(--foreground)]">My Registered Complaints</h3>
+            <p class="text-xs text-[var(--muted-foreground)]">Click any ticket to inspect real-time audit logs or provide resolution feedback.</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <select id="c-filter-status" onchange="fetchCitizenComplaints()" class="bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-xl text-sm px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+              <option value="ALL">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="citizen-list-container" class="space-y-4">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ======================================================== -->
+    <!-- TAB 2: ADMIN DASHBOARD & ANALYTICS VISUALIZER            -->
+    <!-- ======================================================== -->
+    <div id="tab-admin" class="space-y-6 hidden">
+      
+      <!-- Top KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-2xl shadow-sm">
+          <div class="flex justify-between items-center text-xs text-[var(--muted-foreground)] font-bold uppercase tracking-wider">
+            <span>Total Tickets</span>
+            <span class="text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-full">Live DB</span>
+          </div>
+          <p class="text-3xl font-extrabold text-[var(--foreground)] mt-3" id="a-stat-total">0</p>
+          <p class="text-xs text-emerald-500 mt-1 font-medium">↑ Synced with REST API</p>
+        </div>
+
+        <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-2xl shadow-sm">
+          <div class="flex justify-between items-center text-xs text-[var(--muted-foreground)] font-bold uppercase tracking-wider">
+            <span>Critical SLA Hazards</span>
+            <span class="text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-full animate-pulse">High Risk</span>
+          </div>
+          <p class="text-3xl font-extrabold text-rose-500 mt-3" id="a-stat-critical">0</p>
+          <p class="text-xs text-rose-500 mt-1 font-medium">Requires Immediate Dispatch</p>
+        </div>
+
+        <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-2xl shadow-sm">
+          <div class="flex justify-between items-center text-xs text-[var(--muted-foreground)] font-bold uppercase tracking-wider">
+            <span>Avg Resolution Time</span>
+            <span class="text-purple-500 bg-purple-500/10 px-2 py-0.5 rounded-full">AI SLA</span>
+          </div>
+          <p class="text-3xl font-extrabold text-[var(--foreground)] mt-3">14.2 hrs</p>
+          <p class="text-xs text-emerald-500 mt-1 font-medium">↓ 4.8 hrs optimization</p>
+        </div>
+
+        <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-2xl shadow-sm">
+          <div class="flex justify-between items-center text-xs text-[var(--muted-foreground)] font-bold uppercase tracking-wider">
+            <span>Citizen CSAT Rating</span>
+            <span class="text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full">★ Rating</span>
+          </div>
+          <p class="text-3xl font-extrabold text-amber-500 mt-3" id="a-stat-csat">4.8 / 5.0</p>
+          <p class="text-xs text-[var(--muted-foreground)] mt-1 font-medium">Verified Citizen Reviews</p>
+        </div>
+      </div>
+
+      <!-- VISUALIZATIONS GRID -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Department Volume Visualizer -->
+        <div class="bg-[var(--card)] border border-[var(--border)] p-6 rounded-2xl shadow-sm lg:col-span-2 space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="font-extrabold text-base text-[var(--foreground)]">Departmental Load Distribution</h3>
+            <span class="text-xs text-[var(--muted-foreground)]">Auto-Categorized</span>
+          </div>
+          <div id="dept-chart-container" class="space-y-3 pt-2">
+            <!-- Dynamic Bar Chart -->
+          </div>
+        </div>
+
+        <!-- AI Cluster & Hazard Warnings -->
+        <div class="bg-[var(--card)] border border-[var(--border)] p-6 rounded-2xl shadow-sm space-y-4">
+          <h3 class="font-extrabold text-base text-[var(--foreground)] flex items-center space-x-2">
+            <span>🤖</span><span>AI Incident & Cluster Warnings</span>
+          </h3>
+
+          <div class="bg-indigo-500/10 border border-indigo-500/20 p-3.5 rounded-xl space-y-1.5 text-xs">
+            <div class="flex justify-between font-bold text-indigo-500">
+              <span>Cluster Detected</span>
+              <span>Sector 14</span>
+            </div>
+            <p class="text-[var(--muted-foreground)]">2 water pipeline burst reports in Sector 14. AI recommends merging into Master Incident #INC-402.</p>
+          </div>
+
+          <div class="bg-rose-500/10 border border-rose-500/20 p-3.5 rounded-xl space-y-1.5 text-xs">
+            <div class="flex justify-between font-bold text-rose-500">
+              <span>SLA Critical Warning</span>
+              <span>Ticket CMP-1002</span>
+            </div>
+            <p class="text-[var(--muted-foreground)]">Live electrical wire report has less than 60 mins remaining on emergency SLA target.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Central Admin Table -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-[var(--border)]">
+          <div>
+            <h3 class="text-lg font-bold text-[var(--foreground)]">Central Ticket Control Center</h3>
+            <p class="text-xs text-[var(--muted-foreground)]">Manage tickets, reassign personnel, and patch resolution timelines.</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <input type="text" id="a-search" oninput="fetchAdminTable()" placeholder="Search title, ID, location..." class="bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-xl text-sm px-3.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 w-48 sm:w-60">
+            
+            <select id="a-filter-dept" onchange="fetchAdminTable()" class="bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-xl text-sm px-3.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+              <option value="ALL">All Depts</option>
+              <option value="Public Works">Public Works</option>
+              <option value="Sanitation">Sanitation</option>
+              <option value="Electrical">Electrical</option>
+              <option value="Water Supply">Water Supply</option>
+            </select>
+
+            <select id="a-filter-priority" onchange="fetchAdminTable()" class="bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded-xl text-sm px-3.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+              <option value="ALL">All Urgencies</option>
+              <option value="Critical">Critical</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-[var(--background)] text-[var(--muted-foreground)] uppercase text-xs border-b border-[var(--border)]">
+              <tr>
+                <th class="py-3 px-3">Ticket ID</th>
+                <th class="py-3 px-3">Title & Category</th>
+                <th class="py-3 px-3">Location</th>
+                <th class="py-3 px-3">Urgency & Score</th>
+                <th class="py-3 px-3">Status</th>
+                <th class="py-3 px-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body" class="divide-y divide-[var(--border)]">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ======================================================== -->
+    <!-- TAB 3: INTERACTIVE KANBAN BOARD                          -->
+    <!-- ======================================================== -->
+    <div id="tab-kanban" class="space-y-4 hidden">
+      <div class="flex items-center justify-between pb-2 border-b border-[var(--border)]">
+        <div>
+          <h2 class="text-xl font-extrabold text-[var(--foreground)]">Interactive Ticket Workflow Kanban</h2>
+          <p class="text-xs text-[var(--muted-foreground)]">Drag & move tickets across operational stages.</p>
+        </div>
+        <button onclick="fetchKanbanBoard()" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-[var(--border)] hover:bg-[var(--background)]">
+          🔄 Refresh Columns
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- Pending Column -->
+        <div class="bg-[var(--background)]/60 border border-[var(--border)] p-4 rounded-2xl space-y-3 kanban-col">
+          <div class="flex items-center justify-between font-bold text-xs uppercase tracking-wider text-blue-500 border-b border-[var(--border)] pb-2">
+            <span>📋 Pending Triage</span>
+            <span id="k-count-pending" class="bg-blue-500/20 px-2 py-0.5 rounded-full">0</span>
+          </div>
+          <div id="k-col-pending" class="space-y-3"></div>
+        </div>
+
+        <!-- In Progress Column -->
+        <div class="bg-[var(--background)]/60 border border-[var(--border)] p-4 rounded-2xl space-y-3 kanban-col">
+          <div class="flex items-center justify-between font-bold text-xs uppercase tracking-wider text-amber-500 border-b border-[var(--border)] pb-2">
+            <span>🔧 In Progress</span>
+            <span id="k-count-inprogress" class="bg-amber-500/20 px-2 py-0.5 rounded-full">0</span>
+          </div>
+          <div id="k-col-inprogress" class="space-y-3"></div>
+        </div>
+
+        <!-- Escalated Column -->
+        <div class="bg-[var(--background)]/60 border border-[var(--border)] p-4 rounded-2xl space-y-3 kanban-col">
+          <div class="flex items-center justify-between font-bold text-xs uppercase tracking-wider text-rose-500 border-b border-[var(--border)] pb-2">
+            <span>🚨 Escalated</span>
+            <span id="k-count-escalated" class="bg-rose-500/20 px-2 py-0.5 rounded-full">0</span>
+          </div>
+          <div id="k-col-escalated" class="space-y-3"></div>
+        </div>
+
+        <!-- Resolved Column -->
+        <div class="bg-[var(--background)]/60 border border-[var(--border)] p-4 rounded-2xl space-y-3 kanban-col">
+          <div class="flex items-center justify-between font-bold text-xs uppercase tracking-wider text-emerald-500 border-b border-[var(--border)] pb-2">
+            <span>✅ Resolved</span>
+            <span id="k-count-resolved" class="bg-emerald-500/20 px-2 py-0.5 rounded-full">0</span>
+          </div>
+          <div id="k-col-resolved" class="space-y-3"></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ======================================================== -->
+    <!-- TAB 4: GEO-SPATIAL RISK HEATMAP                          -->
+    <!-- ======================================================== -->
+    <div id="tab-map" class="space-y-4 hidden">
+      <div class="flex items-center justify-between pb-2 border-b border-[var(--border)]">
+        <div>
+          <h2 class="text-xl font-extrabold text-[var(--foreground)]">City Geo-Spatial Risk & Incident Map</h2>
+          <p class="text-xs text-[var(--muted-foreground)]">Color-coded incident pin distribution across municipal sectors.</p>
+        </div>
+        <div class="flex items-center space-x-3 text-xs font-semibold">
+          <span class="flex items-center space-x-1"><span class="w-3 h-3 rounded-full bg-rose-600 inline-block"></span><span>Critical</span></span>
+          <span class="flex items-center space-x-1"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span><span>High</span></span>
+          <span class="flex items-center space-x-1"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span><span>Medium</span></span>
+        </div>
+      </div>
+
+      <!-- MAP VISUALIZER CONTAINER -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow-sm relative overflow-hidden">
+        <div id="map-canvas-sim" class="w-full h-[500px] bg-slate-900 rounded-xl relative overflow-hidden flex items-center justify-center">
+          <!-- Grid simulation background -->
+          <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:16px_16px]"></div>
+          
+          <!-- Sector Labels -->
+          <div class="absolute top-4 left-4 text-slate-400 font-mono text-xs">Sector 12 (North Zone)</div>
+          <div class="absolute top-4 right-4 text-slate-400 font-mono text-xs">Sector 14 (East Zone)</div>
+          <div class="absolute bottom-4 left-4 text-slate-400 font-mono text-xs">Sector 4 (South Zone)</div>
+          <div class="absolute bottom-4 right-4 text-slate-400 font-mono text-xs">Sector 8 (Central Zone)</div>
+
+          <!-- Dynamic Pins container -->
+          <div id="map-pins-container" class="absolute inset-0"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL: REGISTER NEW COMPLAINT FORM                       -->
+  <!-- ======================================================== -->
+  <div id="new-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-2xl max-w-xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto space-y-4">
+      
+      <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+        <div>
+          <h3 class="text-lg font-bold">Register New Complaint</h3>
+          <p class="text-xs text-[var(--muted-foreground)]">AI Server will auto-categorize and assign SLA upon submission.</p>
+        </div>
+        <button onclick="closeModal('new-modal')" class="text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-xl font-bold">✕</button>
+      </div>
+
+      <form id="new-form" onsubmit="submitNewComplaint(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-1">Title / Brief Subject *</label>
+          <input type="text" id="f-title" required oninput="triggerAiPreview()" placeholder="e.g. Broken streetlight causing darkness hazard" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-1">Detailed Description *</label>
+          <textarea id="f-desc" required rows="3" oninput="triggerAiPreview()" placeholder="Describe exact issue, hazard level, or landmark..." class="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+
+        <!-- REAL-TIME AI PREVIEW CARD -->
+        <div class="bg-blue-500/10 border border-blue-500/30 p-3.5 rounded-xl space-y-2">
+          <div class="flex items-center justify-between text-xs font-bold text-blue-500">
+            <span>✨ Server AI Real-Time Analysis</span>
+            <span class="bg-blue-600 text-white px-2 py-0.5 rounded text-[10px]">Active</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <span class="text-[var(--muted-foreground)]">Detected Dept:</span>
+              <p class="font-bold text-[var(--foreground)]" id="ai-preview-dept">Public Works</p>
+            </div>
+            <div>
+              <span class="text-[var(--muted-foreground)]">Calculated Urgency:</span>
+              <p class="font-bold text-amber-500" id="ai-preview-urgency">Medium (50/100)</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-1">Category Override</label>
+            <select id="f-dept" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Auto (Use AI Category)</option>
+              <option value="Public Works">Public Works</option>
+              <option value="Sanitation">Sanitation</option>
+              <option value="Electrical">Electrical</option>
+              <option value="Water Supply">Water Supply</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-1">Location / Address *</label>
+            <div class="relative">
+              <input type="text" id="f-location" required placeholder="e.g. Sector 12, Main Gate" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pr-16">
+              <button type="button" onclick="autoFillGpsLocation()" class="absolute right-1.5 top-1 bg-blue-600 text-white text-[11px] px-2 py-1 rounded-lg hover:bg-blue-700">GPS📍</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- IMAGE ATTACHMENT SIMULATOR -->
+        <div>
+          <label class="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-1">Attach Image Proof (Optional)</label>
+          <input type="text" id="f-imgurl" placeholder="Paste Image URL or select preset below..." class="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <div class="flex space-x-2 mt-2">
+            <button type="button" onclick="presetImage('pothole')" class="text-[11px] bg-[var(--background)] border border-[var(--border)] px-2.5 py-1 rounded-lg hover:border-blue-500">📷 Sample Pothole</button>
+            <button type="button" onclick="presetImage('electrical')" class="text-[11px] bg-[var(--background)] border border-[var(--border)] px-2.5 py-1 rounded-lg hover:border-blue-500">📷 Sample Electrical Wire</button>
+            <button type="button" onclick="presetImage('trash')" class="text-[11px] bg-[var(--background)] border border-[var(--border)] px-2.5 py-1 rounded-lg hover:border-blue-500">📷 Sample Trash Overflow</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase text-[var(--muted-foreground)] mb-1">Phone Number</label>
+          <input type="tel" id="f-phone" placeholder="+91 9876543210" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div class="pt-3 flex justify-end space-x-3 border-t border-[var(--border)]">
+          <button type="button" onclick="closeModal('new-modal')" class="px-4 py-2 text-sm font-medium rounded-xl border border-[var(--border)] hover:bg-[var(--background)] transition-all">Cancel</button>
+          <button type="submit" class="px-5 py-2 text-sm font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all">Submit via API</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL: DETAILED TICKET & ACTION                          -->
+  <!-- ======================================================== -->
+  <div id="detail-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto space-y-4">
+      
+      <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+        <div class="flex items-center space-x-2">
+          <span id="m-id" class="text-xs font-mono font-bold bg-blue-500/20 text-blue-500 px-2.5 py-1 rounded-lg">#CMP-1001</span>
+          <span id="m-urgency"></span>
+        </div>
+        <button onclick="closeModal('detail-modal')" class="text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-xl font-bold">✕</button>
+      </div>
+
+      <div class="space-y-1">
+        <h2 id="m-title" class="text-xl font-bold">Title</h2>
+        <div class="flex flex-wrap items-center gap-3 text-xs text-[var(--muted-foreground)]">
+          <span>📍 <strong id="m-loc">Location</strong></span>
+          <span>🏢 <strong id="m-dept">Department</strong></span>
+          <span>📅 <strong id="m-date">Date</strong></span>
+        </div>
+      </div>
+
+      <!-- Image Proof view if available -->
+      <div id="m-img-container" class="hidden rounded-xl overflow-hidden border border-[var(--border)] max-h-48 bg-black">
+        <img id="m-img" src="" alt="Proof Attachment" class="w-full h-full object-cover">
+      </div>
+
+      <div class="bg-[var(--background)] p-4 rounded-xl border border-[var(--border)] text-sm leading-relaxed" id="m-desc">
+        Description...
+      </div>
+
+      <!-- Tags & Rating View -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="bg-indigo-500/10 border border-indigo-500/20 p-3 rounded-xl space-y-1 text-xs">
+          <div class="font-bold text-indigo-500">🏷️ AI Generated Tags</div>
+          <div id="m-keywords" class="flex flex-wrap gap-1"></div>
+        </div>
+
+        <div id="m-rating-box" class="bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl space-y-1 text-xs">
+          <div class="font-bold text-amber-500">⭐ Citizen Feedback</div>
+          <div id="m-rating-content" class="text-[var(--muted-foreground)]">No review submitted yet.</div>
+        </div>
+      </div>
+
+      <!-- Audit Timeline -->
+      <div>
+        <h4 class="text-xs font-bold uppercase text-[var(--muted-foreground)] mb-2">Audit Timeline & Logs</h4>
+        <div id="m-timeline" class="space-y-2 text-xs border-l-2 border-blue-500 pl-3"></div>
+      </div>
+
+      <!-- Citizen Rating Action Form (Only shown if Resolved) -->
+      <div id="citizen-feedback-form" class="bg-amber-500/10 p-4 rounded-xl border border-amber-500/30 space-y-2 hidden text-xs">
+        <div class="font-bold text-amber-600">★ Rate Resolution Quality</div>
+        <div class="flex items-center space-x-2">
+          <select id="fb-rating" class="bg-[var(--card)] border border-[var(--border)] rounded p-1 text-sm">
+            <option value="5">⭐⭐⭐⭐⭐ (5/5) Excellent</option>
+            <option value="4">⭐⭐⭐⭐ (4/5) Good</option>
+            <option value="3">⭐⭐⭐ (3/5) Average</option>
+          </select>
+          <input type="text" id="fb-comment" placeholder="Write feedback..." class="flex-1 bg-[var(--card)] border border-[var(--border)] rounded p-1.5 text-xs">
+          <button onclick="submitCitizenFeedback()" class="bg-amber-600 text-white font-bold px-3 py-1.5 rounded-lg hover:bg-amber-700">Submit</button>
+        </div>
+      </div>
+
+      <!-- Admin Actions Box -->
+      <div id="admin-actions-box" class="bg-[var(--background)] p-4 rounded-xl border border-[var(--border)] space-y-3 hidden">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-bold uppercase text-[var(--muted-foreground)]">REST API Action: Update Status</h4>
+          <button onclick="autoGenerateAiResponse()" class="text-[11px] bg-indigo-600 text-white px-2.5 py-1 rounded-lg hover:bg-indigo-700">✨ Auto-Generate AI Note</button>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-[var(--muted-foreground)] mb-1">Status</label>
+            <select id="u-status" class="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg text-sm p-2 text-[var(--foreground)]">
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+              <option value="Escalated">Escalated</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[var(--muted-foreground)] mb-1">Assigned Staff</label>
+            <input type="text" id="u-staff" placeholder="Officer Name" class="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg text-sm p-2 text-[var(--foreground)]">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[var(--muted-foreground)] mb-1">Resolution Note / Remarks</label>
+          <input type="text" id="u-note" placeholder="Add resolution note..." class="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg text-sm p-2 text-[var(--foreground)]">
+        </div>
+        <button onclick="submitAdminUpdate()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl text-sm transition-all shadow">
+          PATCH /api/complaints/:id (Save Update)
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

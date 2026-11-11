@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCMS Simple Front‑end</title>
+  <script src="https://cdn.jsdelivr.net/npm/tailwindcss@^3/dist/tailwind.min.js"></script>
+  <style>
+    .loader { @apply animate-spin border-4 border-blue-500 border-t-transparent rounded-full w-8 h-8; }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col items-center p-4">
+  <h1 class="text-2xl font-bold mb-4">Smart Complaint Management – Simple UI</h1>
+
+  <!-- New Complaint Form -->
+  <section class="w-full max-w-xl bg-white rounded-xl shadow p-4 mb-6">
+    <h2 class="text-xl font-semibold mb-2">File a Complaint</h2>
+    <form id="complaint-form" class="grid gap-2">
+      <input type="text" id="title" placeholder="Title" required class="border rounded p-2" />
+      <textarea id="description" placeholder="Description" required class="border rounded p-2"></textarea>
+      <input type="text" id="location" placeholder="Location" required class="border rounded p-2" />
+      <button type="submit" class="bg-blue-600 text-white py-2 rounded">Submit</button>
+    </form>
+  </section>
+
+  <!-- Complaints List -->
+  <section class="w-full max-w-2xl">
+    <h2 class="text-xl font-semibold mb-2">Registered Complaints</h2>
+    <div id="complaints" class="space-y-3"></div>
+  </section>
+
+  <script>
+    const API = 'http://localhost:3000/api';
+
+    async function loadComplaints() {
+      const container = document.getElementById('complaints');
+      container.innerHTML = '<div class="loader mx-auto"></div>';
+      const res = await fetch(`${API}/complaints`);
+      const json = await res.json();
+      if (!json.success) { container.innerHTML = '<p class="text-red-500">Failed to load</p>'; return; }
+      const list = json.data;
+      if (list.length === 0) {
+        container.innerHTML = '<p class="text-gray-600">No complaints yet.</p>';
+        return;
+      }
+      container.innerHTML = list.map(c => `
+        <div class="bg-white p-3 rounded shadow-sm">
+          <h3 class="font-bold">${c.title}</h3>
+          <p class="text-sm text-gray-600">${c.description}</p>
+          <p class="text-xs text-gray-500">Location: ${c.location} | Status: ${c.status}</p>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('complaint-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const payload = {
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value,
+        location: document.getElementById('location').value,
+        categoryOverride: '',
+        imageUrl: '',
+        phone: ''
+      };
+      const res = await fetch(`${API}/complaints`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const json = await res.json();
+      if (json.success) { alert('Complaint filed!'); loadComplaints(); e.target.reset(); }
+      else alert('Error: ' + (json.message || 'Failed'));
+    });
+
+    // Initial load
+    loadComplaints();
+  </script>
+</body>
+</html>

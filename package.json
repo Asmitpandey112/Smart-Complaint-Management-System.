@@ -1,0 +1,12 @@
+{
+  "name": "smart-complaint-management-system",
+  "version": "1.0.0",
+  "description": "AI-Powered Smart Complaint Management System Working Prototype",
+  "scripts": {
+    "start": "npm --prefix backend start",
+    "server": "npm --prefix backend start",
+    "client": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "dev": "npm --prefix backend start"
+  }
+}
